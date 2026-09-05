@@ -1,0 +1,1547 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="dark">
+<title>Learn</title>
+<style>
+  /* ============================================================
+     THEME
+     ============================================================ */
+  :root {
+    --bg: #131722;
+    --surface: #1c2130;
+    --surface-2: #262c3f;
+    --line: #363e57;
+    --text: #f3f5fa;
+    --muted: #9aa4ba;
+    --green: #58cc02;
+    --green-d: #46a302;
+    --green-bg: #17330a;
+    --red: #ff4b4b;
+    --red-d: #cf3434;
+    --red-bg: #3d1616;
+    --gold: #ffc800;
+    --gold-d: #d9a600;
+    --gold-bg: #2a2410;
+    --blue: #1cb0f6;
+    --blue-d: #1793d0;
+    --radius: 16px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--text); }
+  body {
+    font-family: ui-rounded, "SF Pro Rounded", "Nunito", "Segoe UI", system-ui, sans-serif;
+    font-size: 18px;
+    line-height: 1.35;
+    -webkit-text-size-adjust: 100%;
+  }
+  button, input { font: inherit; color: inherit; }
+  button { cursor: pointer; }
+
+  #app { min-height: 100dvh; display: flex; flex-direction: column; max-width: 600px; margin: 0 auto; }
+  .screen { display: flex; flex-direction: column; flex: 1; }
+
+  /* ---------- Buttons ---------- */
+  .btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+    width: 100%; min-height: 56px; padding: 0 24px;
+    border: 0; border-radius: var(--radius);
+    font-weight: 800; font-size: 18px; letter-spacing: .02em;
+    background: var(--surface-2); color: var(--text);
+    box-shadow: 0 4px 0 var(--line);
+    transition: transform .06s, box-shadow .06s;
+    user-select: none; -webkit-user-select: none;
+  }
+  .btn:active { transform: translateY(4px); box-shadow: 0 0 0 var(--line); }
+  .btn.green { background: var(--green); box-shadow: 0 4px 0 var(--green-d); color: #0a1a00; }
+  .btn.green:active { box-shadow: 0 0 0 var(--green-d); }
+  .btn.red { background: var(--red); box-shadow: 0 4px 0 var(--red-d); color: #fff; }
+  .btn.red:active { box-shadow: 0 0 0 var(--red-d); }
+  .btn.blue { background: var(--blue); box-shadow: 0 4px 0 var(--blue-d); color: #06222f; }
+  .btn.blue:active { box-shadow: 0 0 0 var(--blue-d); }
+  .btn.ghost { background: transparent; box-shadow: inset 0 0 0 2px var(--line); }
+  .btn.ghost:active { transform: none; }
+  .btn[disabled] { opacity: .4; cursor: default; }
+  .btn[disabled]:active { transform: none; box-shadow: 0 4px 0 var(--line); }
+  .btn.green[disabled]:active { box-shadow: 0 4px 0 var(--green-d); }
+  .btn.small { min-height: 44px; font-size: 15px; padding: 0 14px; width: auto; }
+  :focus-visible { outline: 3px solid var(--blue); outline-offset: 3px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+
+  /* ---------- Top bars ---------- */
+  .topbar {
+    position: sticky; top: 0; z-index: 5;
+    display: flex; align-items: center; gap: 12px;
+    padding: 14px 16px; background: var(--bg); border-bottom: 2px solid var(--line);
+  }
+  .stat { display: inline-flex; align-items: center; gap: 6px; font-weight: 800; font-size: 17px; }
+  .stat .xp { color: var(--gold); }
+  .stat .streak { color: #ff9600; }
+  .iconbtn {
+    min-width: 44px; height: 44px; border: 0; border-radius: 12px; padding: 0 10px;
+    background: transparent; color: var(--muted); font-size: 22px; font-weight: 800;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .iconbtn:hover { background: var(--surface); color: var(--text); }
+  .iconbtn .txt { font-size: 15px; }
+
+  .bar { flex: 1; height: 16px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
+  .bar .fill {
+    display: block; height: 100%; width: 0%; border-radius: 99px;
+    background: var(--green); transition: width .35s ease;
+    box-shadow: inset 0 4px 0 rgba(255,255,255,.25);
+  }
+  .bar.gold .fill { background: var(--gold); }
+
+  .hearts { display: inline-flex; gap: 2px; font-size: 20px; letter-spacing: 1px; }
+  .hearts .lost { opacity: .22; filter: grayscale(1); }
+
+  /* ---------- Course picker ---------- */
+  .page { padding: 20px 16px; display: flex; flex-direction: column; gap: 14px; flex: 1; }
+  .page h1 { margin: 0 0 4px; font-size: 28px; line-height: 1.15; }
+  .course-card {
+    display: flex; align-items: center; gap: 14px; width: 100%; text-align: left;
+    padding: 16px; border: 2px solid var(--line); border-bottom-width: 5px; border-radius: 20px;
+    background: var(--surface); color: var(--text);
+  }
+  .course-card:hover { background: var(--surface-2); }
+  .course-card:active { border-bottom-width: 2px; transform: translateY(3px); }
+  .course-card .emoji { font-size: 34px; width: 56px; height: 56px; border-radius: 16px; background: var(--surface-2); display: grid; place-items: center; flex: none; }
+  .course-card.done .emoji { background: var(--gold); }
+  .course-card .body { flex: 1; min-width: 0; }
+  .course-card .t { display: block; font-weight: 900; font-size: 19px; }
+  .course-card .d { display: block; color: var(--muted); font-size: 15px; margin: 2px 0 8px; }
+  .course-card .p { display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 700; color: var(--muted); }
+  .course-card .p .bar { height: 10px; }
+  .course-card .chev { color: var(--muted); font-size: 24px; }
+  .banner { background: var(--gold-bg); border: 2px solid var(--gold); border-radius: 12px; padding: 12px 14px; font-size: 15px; }
+  .banner b { color: var(--gold); }
+  .banner ul { margin: 6px 0 0; padding-left: 20px; }
+
+  /* ---------- Roadmap ---------- */
+  .course-head { padding: 20px 16px 6px; }
+  .course-head h1 { margin: 0 0 8px; font-size: 26px; line-height: 1.15; }
+  .course-progress { display: flex; align-items: center; gap: 12px; color: var(--muted); font-weight: 700; font-size: 15px; }
+  .course-progress .bar { height: 12px; }
+
+  .map { position: relative; width: 100%; max-width: 420px; margin: 0 auto; flex: none; }
+  .map svg { position: absolute; inset: 0; pointer-events: none; overflow: visible; }
+  .map path { fill: none; stroke: var(--line); stroke-width: 10; stroke-linecap: round; stroke-dasharray: 0 18; }
+  .map path.done { stroke: var(--green-d); stroke-dasharray: none; }
+
+  .node-wrap { position: absolute; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; width: 140px; }
+  .node {
+    width: 78px; height: 78px; border-radius: 50%; border: 0;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 30px; background: var(--surface-2); color: var(--muted);
+    box-shadow: 0 7px 0 var(--line);
+    transition: transform .06s, box-shadow .06s;
+  }
+  .node:active { transform: translateY(7px); box-shadow: 0 0 0 var(--line); }
+  .node.available, .node.completed { background: var(--green); box-shadow: 0 7px 0 var(--green-d); color: #0a1a00; }
+  .node.available:active, .node.completed:active { box-shadow: 0 0 0 var(--green-d); }
+  .node.cleared { background: var(--gold); box-shadow: 0 7px 0 var(--gold-d); color: #2b2000; }
+  .node.cleared:active { box-shadow: 0 0 0 var(--gold-d); }
+  .node.locked { cursor: not-allowed; }
+  .node.locked:active { transform: none; box-shadow: 0 7px 0 var(--line); }
+  .node-label { margin-top: 12px; font-weight: 800; font-size: 15px; text-align: center; color: var(--text); }
+  .node.locked + .node-label { color: var(--muted); }
+
+  .start-tip {
+    position: absolute; top: -46px; left: 50%; transform: translateX(-50%);
+    background: var(--surface-2); color: var(--green); font-weight: 900; font-size: 14px;
+    padding: 6px 12px; border-radius: 10px; border: 2px solid var(--line); white-space: nowrap;
+    animation: bob 1.4s ease-in-out infinite;
+  }
+  .start-tip::after {
+    content: ""; position: absolute; left: 50%; bottom: -8px; transform: translateX(-50%) rotate(45deg);
+    width: 12px; height: 12px; background: var(--surface-2); border-right: 2px solid var(--line); border-bottom: 2px solid var(--line);
+  }
+  @keyframes bob { 0%,100% { translate: 0 0; } 50% { translate: 0 -6px; } }
+
+  .footer { padding: 24px 16px 32px; text-align: center; color: var(--muted); font-size: 14px; }
+  .linkbtn { background: none; border: 0; color: var(--muted); text-decoration: underline; font-size: 14px; padding: 8px; }
+  .linkbtn:hover { color: var(--red); }
+
+  /* ---------- Lesson ---------- */
+  .qbody { flex: 1; padding: 24px 16px; display: flex; flex-direction: column; gap: 20px; }
+  .qkind { color: var(--muted); font-weight: 700; font-size: 15px; }
+  .prompt { font-size: 24px; font-weight: 800; line-height: 1.3; margin: 0; }
+  .choices { display: flex; flex-direction: column; gap: 10px; }
+  .choice {
+    display: flex; align-items: center; gap: 14px; width: 100%; min-height: 60px;
+    padding: 12px 16px; text-align: left; font-size: 18px; font-weight: 700;
+    border: 2px solid var(--line); border-bottom-width: 5px; border-radius: var(--radius);
+    background: var(--surface); color: var(--text);
+  }
+  .choice:not([disabled]):hover { background: var(--surface-2); }
+  .choice:not([disabled]):active { border-bottom-width: 2px; transform: translateY(3px); }
+  .choice .key {
+    flex: none; width: 30px; height: 30px; border-radius: 8px; border: 2px solid var(--line);
+    display: grid; place-items: center; font-size: 14px; color: var(--muted);
+  }
+  .choice.correct { border-color: var(--green); background: var(--green-bg); color: var(--text); }
+  .choice.wrong { border-color: var(--red); background: var(--red-bg); color: var(--text); }
+  .choice[disabled] { cursor: default; }
+  .tf { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .tf .choice { justify-content: center; font-size: 22px; min-height: 80px; }
+
+  /* Reading passage */
+  .passage {
+    background: var(--surface); border: 2px solid var(--line); border-radius: var(--radius);
+    padding: 16px; font-size: 17px; line-height: 1.7; max-height: 44vh; overflow: auto;
+  }
+  .passage .w { border-radius: 4px; padding: 2px 1px; cursor: pointer; -webkit-user-select: none; user-select: none; }
+  .passage .w:hover { background: var(--surface-2); }
+  .passage .w.sel { background: var(--blue); color: #06222f; }
+  .passage .w.ans { background: var(--green); color: #0a1a00; }
+  .passage .w.bad { background: var(--red); color: #fff; }
+  .passage .filled { font-weight: 800; text-decoration: underline; text-decoration-color: var(--green); text-decoration-thickness: 2px; text-underline-offset: 3px; }
+  .passage .slot { display: inline-block; min-width: 140px; border-bottom: 3px solid var(--blue); vertical-align: baseline; }
+  .passage .gap { display: inline-block; min-width: 70px; border-bottom: 3px solid var(--line); }
+  .passage select.blank {
+    font: inherit; font-weight: 800; padding: 2px 8px; border-radius: 8px; max-width: 100%;
+    border: 2px solid var(--blue); background: var(--surface-2); color: var(--text);
+  }
+  .passage select.blank.right { border-color: var(--green); background: var(--green-bg); }
+  .passage select.blank.wrongsel { border-color: var(--red); background: var(--red-bg); }
+  .hint { color: var(--muted); font-size: 15px; font-weight: 600; }
+  .hint b { color: var(--text); }
+
+  /* Theme picker */
+  .themes { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; width: 100%; margin-top: 10px; }
+  .theme {
+    border: 2px solid var(--line); border-radius: 12px; padding: 10px 12px; text-align: left;
+    font-weight: 800; font-size: 14px; display: flex; align-items: center; gap: 8px;
+  }
+  .theme.on { border-color: var(--green); box-shadow: 0 0 0 2px var(--green); }
+  .dots { display: inline-flex; gap: 3px; flex: none; }
+  .dots i { width: 10px; height: 10px; border-radius: 50%; display: block; }
+
+  .typein {
+    width: 100%; min-height: 60px; padding: 14px 16px; font-size: 20px;
+    border: 2px solid var(--line); border-radius: var(--radius); background: var(--surface); color: var(--text);
+  }
+  .typein:focus { outline: none; border-color: var(--blue); }
+
+  .foot {
+    position: sticky; bottom: 0; z-index: 5;
+    padding: 16px 16px calc(16px + env(safe-area-inset-bottom));
+    background: var(--bg); border-top: 2px solid var(--line);
+    transition: background .2s, border-color .2s;
+  }
+  .foot.ok { background: var(--green-bg); border-color: var(--green); }
+  .foot.bad { background: var(--red-bg); border-color: var(--red); }
+  .feedback { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 14px; font-weight: 800; font-size: 20px; }
+  .foot.ok .feedback { color: var(--green); }
+  .foot.bad .feedback { color: var(--red); }
+  .feedback .mark { font-size: 26px; line-height: 1; }
+  .feedback .sub { display: block; font-size: 16px; font-weight: 600; margin-top: 4px; color: var(--text); }
+
+  /* ---------- Results ---------- */
+  .results { flex: 1; padding: 40px 16px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .results h2 { margin: 0; font-size: 32px; text-align: center; line-height: 1.15; }
+  .results .big { font-size: 64px; text-align: center; line-height: 1; }
+  .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .stat-card { border: 2px solid var(--line); border-radius: var(--radius); padding: 14px; text-align: center; }
+  .stat-card .v { font-size: 30px; font-weight: 900; }
+  .stat-card .l { font-size: 14px; color: var(--muted); font-weight: 700; }
+  .stat-card.gold { border-color: var(--gold); } .stat-card.gold .v { color: var(--gold); }
+  .stat-card.green { border-color: var(--green); } .stat-card.green .v { color: var(--green); }
+  .stat-card.red { border-color: var(--red); } .stat-card.red .v { color: var(--red); }
+  .miss-list { display: flex; flex-direction: column; gap: 8px; }
+  .miss { border-left: 4px solid var(--red); background: var(--surface); padding: 10px 14px; border-radius: 0 12px 12px 0; }
+  .miss .p { font-weight: 700; }
+  .miss .a { color: var(--muted); font-size: 15px; }
+  .miss .a b { color: var(--green); }
+  .results h3 { margin: 4px 0 0; font-size: 18px; }
+
+  /* ---------- Modal, settings, toast ---------- */
+  .overlay {
+    position: fixed; inset: 0; z-index: 20; background: rgba(0,0,0,.6);
+    display: flex; align-items: flex-end; justify-content: center;
+  }
+  .modal {
+    width: 100%; max-width: 600px; background: var(--surface); border-radius: 24px 24px 0 0;
+    padding: 24px 20px calc(24px + env(safe-area-inset-bottom));
+    border-top: 2px solid var(--line);
+    animation: rise .18s ease-out;
+  }
+  @media (min-width: 640px) { .overlay { align-items: center; } .modal { border-radius: 24px; border: 2px solid var(--line); } }
+  @keyframes rise { from { transform: translateY(30px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .modal h2 { margin: 0 0 6px; font-size: 24px; }
+  .modal p { margin: 0 0 18px; color: var(--muted); }
+  .modal .meta { display: flex; gap: 16px; margin-bottom: 18px; font-weight: 800; flex-wrap: wrap; }
+
+  .setting { display: flex; align-items: center; gap: 14px; padding: 12px 0; border-bottom: 2px solid var(--line); }
+  .setting:last-of-type { border-bottom: 0; }
+  .setting .lbl { flex: 1; font-weight: 800; }
+  .setting .lbl small { display: block; color: var(--muted); font-weight: 600; font-size: 14px; }
+  input[type=range] { width: 46%; accent-color: var(--green); height: 32px; }
+  .toggle {
+    width: 64px; height: 36px; border-radius: 99px; border: 0; background: var(--surface-2); position: relative;
+    box-shadow: inset 0 0 0 2px var(--line); flex: none;
+  }
+  .toggle::after { content: ""; position: absolute; top: 5px; left: 5px; width: 26px; height: 26px; border-radius: 50%; background: var(--muted); transition: left .15s, background .15s; }
+  .toggle.on { background: var(--green-bg); box-shadow: inset 0 0 0 2px var(--green); }
+  .toggle.on::after { left: 33px; background: var(--green); }
+
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    background: var(--surface-2); border: 2px solid var(--line); padding: 12px 18px; border-radius: 14px;
+    font-weight: 700; z-index: 30; max-width: 90vw; text-align: center;
+  }
+
+  /* ---------- Chapter headers on the roadmap ---------- */
+  .chapter-head {
+    position: absolute; left: 12px; right: 12px; height: 64px; z-index: 1;
+    display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+    border-radius: 16px; background: var(--surface); border: 2px solid var(--line);
+  }
+  .chapter-head.active { border-color: var(--green); }
+  .chapter-head.done { border-color: var(--gold); background: var(--gold-bg); }
+  .chapter-head.locked { opacity: .55; }
+  .ch-n { font-size: 13px; color: var(--muted); font-weight: 700; }
+  .ch-t { font-weight: 900; font-size: 17px; line-height: 1.2; }
+  .ch-p { font-weight: 800; color: var(--muted); white-space: nowrap; }
+  .chapter-head.done .ch-p { color: var(--gold); }
+  .chapter-head.active .ch-p { color: var(--green); }
+
+  /* ---------- Celebration screens ---------- */
+  .celebrate { position: relative; overflow: hidden; min-height: 100dvh; justify-content: center; align-items: center; text-align: center; }
+  .cel-body { position: relative; z-index: 2; width: 100%; padding: 40px 20px; display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .badge-wrap { position: relative; width: 170px; height: 170px; display: grid; place-items: center; margin-bottom: 6px; }
+  .badge { font-size: 96px; line-height: 1; filter: drop-shadow(0 12px 24px rgba(255, 200, 0, .35)); animation: pop .8s cubic-bezier(.2, 1.5, .4, 1) both; }
+  .ring { position: absolute; inset: 0; border-radius: 50%; border: 4px solid var(--gold); opacity: 0; animation: ringout 1.6s ease-out .4s infinite; }
+  .ring.r2 { animation-delay: 1.2s; border-color: var(--green); }
+  @keyframes pop { 0% { transform: scale(0) rotate(-25deg); opacity: 0; } 60% { transform: scale(1.18) rotate(6deg); opacity: 1; } 100% { transform: scale(1) rotate(0); } }
+  @keyframes ringout { 0% { transform: scale(.55); opacity: .9; } 100% { transform: scale(1.7); opacity: 0; } }
+  .cel-kicker, .cel-title, .cel-sub, .celebrate .stats, .celebrate .stack { animation: risein .5s ease-out both; }
+  .cel-kicker { animation-delay: .35s; } .cel-title { animation-delay: .45s; } .cel-sub { animation-delay: .55s; }
+  .celebrate .stats { animation-delay: .7s; width: 100%; } .celebrate .stack { animation-delay: .9s; width: 100%; }
+  @keyframes risein { from { transform: translateY(16px); opacity: 0; } to { transform: none; opacity: 1; } }
+  .cel-kicker { color: var(--gold); font-weight: 900; font-size: 16px; letter-spacing: .04em; }
+  .cel-title { font-size: 34px; margin: 0; line-height: 1.1; }
+  .cel-sub { color: var(--muted); margin: 0; max-width: 34ch; }
+  .confetti { position: absolute; inset: 0; overflow: hidden; pointer-events: none; z-index: 1; }
+  .confetti span { position: absolute; top: -24px; opacity: 0; animation: fall linear both; }
+  @keyframes fall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(110vh) rotate(720deg); opacity: .7; } }
+
+  /* Course complete: bigger, louder, longer. */
+  .celebrate.course .badge-wrap { width: 220px; height: 220px; }
+  .celebrate.course .badge { font-size: 128px; animation: pop 1s cubic-bezier(.2, 1.5, .4, 1) .3s both, bounce 2.2s ease-in-out 1.4s infinite; }
+  .celebrate.course .cel-title { font-size: 40px; }
+  .celebrate.course .cel-kicker { font-size: 18px; }
+  @keyframes bounce { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-12px) scale(1.04); } }
+  .rays {
+    position: absolute; left: 50%; top: 50%; width: 200vmax; height: 200vmax; margin: -100vmax 0 0 -100vmax;
+    background: repeating-conic-gradient(rgba(255, 200, 0, .13) 0 12deg, transparent 12deg 24deg);
+    animation: spin 50s linear infinite; z-index: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .flash { position: absolute; inset: 0; background: var(--gold); opacity: 0; pointer-events: none; z-index: 1; animation: flash 1.2s ease-out .25s both; }
+  @keyframes flash { 0% { opacity: 0; } 12% { opacity: .75; } 100% { opacity: 0; } }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation: none !important; transition: none !important; }
+  }
+</style>
+</head>
+<body>
+<div id="app"><div class="page" style="color:var(--muted)">Loading courses…</div></div>
+
+<script>
+/* ============================================================================
+   CONTENT LIVES IN THE courses/ FOLDER — NOT IN THIS FILE.
+   See ADDING_CONTENT.md. To add a course: copy courses/_template.js, fill it
+   in, and add its filename to courses/manifest.js. This file is the app shell
+   and should not need edits for new content.
+   ============================================================================ */
+
+/* ============================================================================
+   SETTINGS
+   ============================================================================ */
+const STORAGE_KEY = "duo-shell-v2";
+const OLD_STORAGE_KEY = "duo-shell-v1";
+const HEARTS_PER_LESSON = 3;
+const SUPPORTED_TYPES = ["mcq", "tf", "type", "reading"];
+const READING_KINDS = ["blanks", "sentence", "highlight", "mcq"];
+
+
+/* ============================================================================
+   COURSE REGISTRY  (course files call registerCourse({...}))
+   ============================================================================ */
+const COURSES = [];
+const CONTENT_WARNINGS = [];
+
+function registerCourse(course) {
+  if (!course || typeof course !== "object") { CONTENT_WARNINGS.push("registerCourse() was called with something that is not an object."); return; }
+  COURSES.push(course);
+}
+
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = src;
+    s.onload = resolve;
+    s.onerror = () => reject(new Error(`Could not load "${src}". Check the filename in courses/manifest.js.`));
+    document.head.appendChild(s);
+  });
+}
+
+// Every course is stored internally as chapters -> items. A course written with a
+// plain `items` array (no chapters) becomes one unnamed chapter. `course.items`
+// is always the flattened list of every lesson in roadmap order.
+function normalizeCourse(c) {
+  if (!Array.isArray(c.chapters)) {
+    c.chapters = [{ id: "all", title: c.title || "Lessons", items: Array.isArray(c.items) ? c.items : [] }];
+    c._singleChapter = true;
+  }
+  c.chapters.forEach(ch => { if (!Array.isArray(ch.items)) ch.items = []; });
+  c.items = c.chapters.flatMap(ch => ch.items);
+}
+
+// Checks a course for common mistakes. Problems go to CONTENT_WARNINGS
+// (shown on the course list) and the console.
+function validateCourse(c, seenIds) {
+  const w = [];
+  const label = c.title || c.id || "(untitled course)";
+  if (!c.id) w.push(`Course "${label}" has no id.`);
+  else if (seenIds.has(c.id)) w.push(`Duplicate course id "${c.id}".`);
+  seenIds.add(c.id);
+  if (!c.title) w.push(`Course "${label}" has no title.`);
+  if (Array.isArray(c.chapters) && Array.isArray(c.items)) w.push(`Course "${label}" has both chapters and items — the top-level items are ignored. Put lessons inside chapters.`);
+  if (!Array.isArray(c.chapters) && !Array.isArray(c.items)) w.push(`Course "${label}" has no chapters (or items) array.`);
+  normalizeCourse(c);
+
+  const chIds = new Set();
+  c.chapters.forEach((ch, ci) => {
+    const cl = ch.title || ch.id || `#${ci + 1}`;
+    if (!c._singleChapter) {
+      if (!ch.id) w.push(`${label} › chapter ${cl} has no id.`);
+      else if (chIds.has(ch.id)) w.push(`${label} › duplicate chapter id "${ch.id}".`);
+      chIds.add(ch.id);
+      if (!ch.title) w.push(`${label} › chapter ${cl} has no title.`);
+      if (!ch.items.length) w.push(`${label} › chapter ${cl} has no lessons.`);
+    }
+  });
+
+  const itemIds = new Set();
+  c.items.forEach((it, i) => {
+    const il = it.title || it.id || `#${i + 1}`;
+    if (!it.id) w.push(`${label} › lesson ${il} has no id.`);
+    else if (itemIds.has(it.id)) w.push(`${label} › duplicate lesson id "${it.id}" (lesson ids must be unique across the whole course).`);
+    itemIds.add(it.id);
+    if (!it.title) w.push(`${label} › lesson ${il} has no title.`);
+    if (!Array.isArray(it.questions) || !it.questions.length) { w.push(`${label} › lesson ${il} has no questions.`); it.questions = it.questions || []; return; }
+    it.questions.forEach((q, qi) => {
+      const ql = `${label} › ${il} › question ${qi + 1}`;
+      if (!SUPPORTED_TYPES.includes(q.type)) { w.push(`${ql}: unsupported type "${q.type}" (will be skipped).`); return; }
+      if (q.type === "reading") { w.push(...validateReading(q, ql)); return; }
+      if (!q.prompt) w.push(`${ql}: missing prompt.`);
+      if (q.type === "mcq") {
+        if (!Array.isArray(q.choices) || q.choices.length < 2) w.push(`${ql}: mcq needs a choices array with 2+ entries.`);
+        else if (!Number.isInteger(q.answer) || q.answer < 0 || q.answer >= q.choices.length) w.push(`${ql}: mcq answer must be an index 0–${q.choices.length - 1}.`);
+      }
+      if (q.type === "tf" && typeof q.answer !== "boolean") w.push(`${ql}: tf answer must be true or false.`);
+      if (q.type === "type" && !(typeof q.answer === "string" || (Array.isArray(q.answer) && q.answer.every(a => typeof a === "string")))) w.push(`${ql}: type answer must be a string or array of strings.`);
+    });
+  });
+  return w;
+}
+
+
+function validateReading(q, ql) {
+  const w = [];
+  if (typeof q.passage !== "string" || !q.passage.trim()) { w.push(`${ql}: reading question needs a passage string.`); return w; }
+  if (!Array.isArray(q.tasks) || !q.tasks.length) { w.push(`${ql}: reading question needs a tasks array.`); return w; }
+  const checkChoices = (t, tl) => {
+    if (!Array.isArray(t.choices) || t.choices.length < 2) w.push(`${tl}: needs a choices array with 2+ entries.`);
+    else if (!Number.isInteger(t.answer) || t.answer < 0 || t.answer >= t.choices.length) w.push(`${tl}: answer must be an index 0–${t.choices.length - 1}.`);
+  };
+  q.tasks.forEach((t, ti) => {
+    const tl = `${ql} › task ${ti + 1} (${t.kind})`;
+    if (!READING_KINDS.includes(t.kind)) { w.push(`${ql} › task ${ti + 1}: unsupported kind "${t.kind}" (will be skipped).`); return; }
+    if (t.kind === "blanks") {
+      if (!t.answers || typeof t.answers !== "object") { w.push(`${tl}: needs an answers object keyed by blank number.`); return; }
+      Object.entries(t.answers).forEach(([k, b]) => {
+        if (!q.passage.includes(`{{${k}}}`)) w.push(`${tl}: blank {{${k}}} is not in the passage.`);
+        checkChoices(b || {}, `${tl} blank {{${k}}}`);
+      });
+      (q.passage.match(/\{\{(\d+)\}\}/g) || []).forEach(ph => { const k = ph.slice(2, -2); if (!t.answers[k]) w.push(`${tl}: passage has ${ph} but answers has no entry "${k}".`); });
+    }
+    if (t.kind === "sentence") {
+      if (!q.passage.includes("{{sentence}}")) w.push(`${tl}: passage must contain {{sentence}} where the missing sentence goes.`);
+      checkChoices(t, tl);
+    }
+    if (t.kind === "highlight") {
+      if (!t.prompt) w.push(`${tl}: needs a prompt.`);
+      const answers = Array.isArray(t.answer) ? t.answer : [t.answer];
+      if (!answers.length || !answers.every(a => typeof a === "string" && a.trim())) w.push(`${tl}: answer must be a string (or array of strings) copied from the passage.`);
+      else {
+        const full = normWords(filledPassage(q));
+        answers.forEach(a => { if (!(" " + full + " ").includes(" " + normWords(a) + " ")) w.push(`${tl}: answer "${a}" does not appear word-for-word in the passage.`); });
+      }
+    }
+    if (t.kind === "mcq") { if (!t.prompt) w.push(`${tl}: needs a prompt.`); checkChoices(t, tl); }
+  });
+  if (q.passage.includes("{{sentence}}") && !q.tasks.some(t => t.kind === "sentence")) w.push(`${ql}: passage has {{sentence}} but no sentence task.`);
+  return w;
+}
+
+
+/* ============================================================================
+   PERSISTENCE
+   Global: xp, streak, sound settings, last opened course.
+   Per course: completed / cleared / unlocked lesson ids.
+   ============================================================================ */
+let progress = null;
+
+function defaultProgress() {
+  return {
+    xp: 0,
+    streak: 0,
+    lastActiveDate: null,       // "YYYY-MM-DD" of last completed lesson
+    currentCourse: null,        // id of last opened course
+    courses: {},                // courseId -> { completed:[], cleared:[], unlocked:[] }
+    settings: { volume: 70, muted: false, theme: "midnight" }
+  };
+}
+
+function loadProgress() {
+  let p = defaultProgress();
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      p = Object.assign(p, saved);
+      p.settings = Object.assign(defaultProgress().settings, saved.settings || {});
+      p.courses = saved.courses || {};
+    } else {
+      // Migrate single-course progress from the previous version, if any.
+      const old = localStorage.getItem(OLD_STORAGE_KEY);
+      if (old && COURSES[0]) {
+        const o = JSON.parse(old);
+        p.xp = o.xp || 0; p.streak = o.streak || 0; p.lastActiveDate = o.lastActiveDate || null;
+        p.courses[COURSES[0].id] = { completed: o.completed || [], cleared: o.cleared || [], unlocked: o.unlocked || [] };
+      }
+    }
+  } catch (e) {
+    console.warn("Could not read saved progress:", e);
+  }
+  if (!COURSES.some(c => c.id === p.currentCourse)) p.currentCourse = null;
+  return p;
+}
+
+// Returns the progress record for a course, creating and normalising it.
+// Unlocks are re-derived from completions so the roadmap stays consistent
+// if lessons are added or reordered.
+function courseProgress(course) {
+  const ids = course.items.map(i => i.id);
+  const cp = progress.courses[course.id] || { completed: [], cleared: [], unlocked: [] };
+  cp.completed = (cp.completed || []).filter(id => ids.includes(id));
+  cp.cleared = (cp.cleared || []).filter(id => ids.includes(id));
+  cp.unlocked = ids.filter((id, i) => i === 0 || cp.completed.includes(ids[i - 1]) || (cp.unlocked || []).includes(id));
+  progress.courses[course.id] = cp;
+  return cp;
+}
+
+function saveProgress() {
+  try { localStorage.setItem(STORAGE_KEY, JSON.stringify(progress)); }
+  catch (e) { console.warn("Could not save progress:", e); }
+}
+
+function resetProgress() {
+  const settings = progress.settings;
+  progress = defaultProgress();
+  progress.settings = settings;
+  saveProgress();
+  applyTheme(progress.settings.theme);
+  showCourseList();
+  toast("Progress reset.");
+}
+
+
+/* ============================================================================
+   DATE / STREAK HELPERS
+   ============================================================================ */
+function dateKey(d) {
+  const y = d.getFullYear(), m = String(d.getMonth() + 1).padStart(2, "0"), day = String(d.getDate()).padStart(2, "0");
+  return `${y}-${m}-${day}`;
+}
+function todayKey() { return dateKey(new Date()); }
+function yesterdayKey() { const d = new Date(); d.setDate(d.getDate() - 1); return dateKey(d); }
+
+function currentStreak() {
+  if (progress.lastActiveDate === todayKey() || progress.lastActiveDate === yesterdayKey()) return progress.streak;
+  return 0;
+}
+
+// Called once per lesson completion. Only increments once per calendar day.
+function touchStreak() {
+  const today = todayKey();
+  if (progress.lastActiveDate === today) return;
+  progress.streak = progress.lastActiveDate === yesterdayKey() ? progress.streak + 1 : 1;
+  progress.lastActiveDate = today;
+}
+
+
+/* ============================================================================
+   SOUND  (synthesised with Web Audio — no audio files needed)
+   ============================================================================ */
+const Sound = (() => {
+  let ctx = null, bus = null;
+  function ac() {
+    if (!ctx) {
+      const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return null;
+      ctx = new AC();
+      // A compressor on the master bus keeps big chords from clipping.
+      bus = ctx.createDynamicsCompressor();
+      bus.threshold.value = -18; bus.knee.value = 20; bus.ratio.value = 6; bus.attack.value = 0.003; bus.release.value = 0.25;
+      bus.connect(ctx.destination);
+    }
+    if (ctx.state === "suspended") ctx.resume();
+    return ctx;
+  }
+  function master() { return progress && !progress.settings.muted ? progress.settings.volume / 100 : 0; }
+
+  // One note: freq in Hz, start offset and duration in seconds.
+  function note(freq, start, dur, opt = {}) {
+    const m = master(); if (m <= 0) return;
+    const c = ac(); if (!c) return;
+    const t = c.currentTime + start;
+    const o = c.createOscillator(), g = c.createGain();
+    o.type = opt.type || "triangle";
+    o.frequency.setValueAtTime(freq, t);
+    if (opt.slideTo) o.frequency.exponentialRampToValueAtTime(opt.slideTo, t + dur);
+    const peak = 0.28 * (opt.vol || 1) * m;
+    g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(peak, t + (opt.attack || 0.012));
+    g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g); g.connect(bus);
+    o.start(t); o.stop(t + dur + 0.05);
+  }
+  return {
+    tap()      { note(700, 0, 0.05, { type: "square", vol: 0.18 }); },
+    correct()  { note(523.25, 0, 0.14); note(659.25, 0.07, 0.14); note(783.99, 0.14, 0.32, { vol: 1.15 }); },
+    wrong()    { note(210, 0, 0.2, { type: "sawtooth", vol: 0.5, slideTo: 150 }); note(160, 0.13, 0.28, { type: "sawtooth", vol: 0.45, slideTo: 95 }); },
+    complete() { [523.25, 659.25, 783.99, 1046.5].forEach((f, i) => note(f, i * 0.09, 0.3)); note(1318.5, 0.4, 0.7, { vol: 1.2 }); note(1046.5, 0.4, 0.7, { vol: 0.5, type: "sine" }); },
+    fail()     { [392, 330, 262].forEach((f, i) => note(f, i * 0.17, 0.32, { type: "triangle", vol: 0.8 })); },
+    unlock()   { note(880, 0, 0.1, { type: "sine" }); note(1174.66, 0.09, 0.1, { type: "sine" }); note(1760, 0.18, 0.45, { type: "sine", vol: 1.1 }); },
+    heart()    { note(300, 0, 0.12, { type: "sine", slideTo: 120, vol: 0.7 }); },
+
+    // Chapter complete: G C E G fanfare into a held C major chord.
+    chapter() {
+      [392, 523.25, 659.25, 783.99].forEach((f, i) => note(f, i * 0.11, 0.3));
+      note(1046.5, 0.5, 1.3, { vol: 1.2 });                       // C6 lead
+      [523.25, 659.25, 783.99].forEach(f => note(f, 0.5, 1.3, { type: "sine", vol: 0.55 })); // C5 E5 G5 pad
+      note(1567.98, 0.72, 1.0, { type: "sine", vol: 0.35 });      // G6 sparkle
+    },
+
+    // Course complete: scale run up, chord, arpeggio, then a big sustained C major with sparkle.
+    // Every note is C, E or G so nothing clashes.
+    course() {
+      // Run up the C major scale (C4 → C5), soft.
+      [261.63, 293.66, 329.63, 349.23, 392, 440, 493.88, 523.25].forEach((f, i) => note(f, i * 0.065, 0.14, { vol: 0.5 }));
+      const t0 = 0.6;
+      // First hit: C major
+      [261.63, 329.63, 392, 523.25].forEach(f => note(f, t0, 0.5, { vol: 0.75 }));
+      // Arpeggio C5 E5 G5 C6 E6 G6
+      [523.25, 659.25, 783.99, 1046.5, 1318.5, 1567.98].forEach((f, i) => note(f, t0 + 0.38 + i * 0.085, 0.32, { vol: 0.85 }));
+      // Final chord, held: C3 G3 C4 E4 G4 C5 E5 G5 C6 — triangle low/mid, sine on top
+      const t1 = t0 + 1.0;
+      [130.81, 196, 261.63, 329.63, 392].forEach(f => note(f, t1, 2.6, { type: "triangle", vol: 0.9, attack: 0.05 }));
+      [523.25, 659.25, 783.99, 1046.5].forEach(f => note(f, t1, 2.6, { type: "sine", vol: 0.7, attack: 0.05 }));
+      // Sparkle on chord tones only: E6 G6 C7 E7 G7
+      [1318.5, 1567.98, 2093, 2637.02, 3135.96].forEach((f, i) => note(f, t1 + 0.3 + i * 0.13, 0.5, { type: "sine", vol: 0.22 }));
+    }
+  };
+})();
+
+
+/* ============================================================================
+   THEMES  (colour schemes selectable in Settings)
+   ============================================================================ */
+const THEMES = [
+  { id: "midnight",  name: "Midnight",         bg: "#131722", surface: "#1c2130", surface2: "#262c3f", line: "#363e57", text: "#f3f5fa", muted: "#9aa4ba", green: "#58cc02", red: "#ff4b4b", gold: "#ffc800", blue: "#1cb0f6" },
+  { id: "daylight",  name: "Daylight",         bg: "#ffffff", surface: "#f7f7f7", surface2: "#ececec", line: "#d9d9d9", text: "#3c3c3c", muted: "#737373", green: "#58cc02", red: "#ff4b4b", gold: "#f5a800", blue: "#1cb0f6", light: true },
+  { id: "dracula",   name: "Dracula",          bg: "#282a36", surface: "#343746", surface2: "#3e4157", line: "#44475a", text: "#f8f8f2", muted: "#9aa3c7", green: "#50fa7b", red: "#ff5555", gold: "#f1fa8c", blue: "#8be9fd" },
+  { id: "nord",      name: "Nord",             bg: "#2e3440", surface: "#3b4252", surface2: "#434c5e", line: "#4c566a", text: "#eceff4", muted: "#b8c0cc", green: "#a3be8c", red: "#bf616a", gold: "#ebcb8b", blue: "#81a1c1" },
+  { id: "gruvbox",   name: "Gruvbox",          bg: "#282828", surface: "#32302f", surface2: "#3c3836", line: "#504945", text: "#ebdbb2", muted: "#a89984", green: "#b8bb26", red: "#fb4934", gold: "#fabd2f", blue: "#83a598" },
+  { id: "catppuccin",name: "Catppuccin",       bg: "#1e1e2e", surface: "#292c3c", surface2: "#313244", line: "#45475a", text: "#cdd6f4", muted: "#a6adc8", green: "#a6e3a1", red: "#f38ba8", gold: "#f9e2af", blue: "#89b4fa" },
+  { id: "sol-dark",  name: "Solarized Dark",   bg: "#002b36", surface: "#073642", surface2: "#0d4250", line: "#586e75", text: "#eee8d5", muted: "#93a1a1", green: "#859900", red: "#dc322f", gold: "#b58900", blue: "#268bd2" },
+  { id: "sol-light", name: "Solarized Light",  bg: "#fdf6e3", surface: "#eee8d5", surface2: "#e4dcc3", line: "#d3cbb7", text: "#073642", muted: "#657b83", green: "#859900", red: "#dc322f", gold: "#b58900", blue: "#268bd2", light: true }
+];
+
+function hexToRgb(h) { const n = parseInt(h.slice(1), 16); return [n >> 16 & 255, n >> 8 & 255, n & 255]; }
+function rgbToHex(r) { return "#" + r.map(v => Math.max(0, Math.min(255, Math.round(v))).toString(16).padStart(2, "0")).join(""); }
+function mixHex(a, b, t) { const x = hexToRgb(a), y = hexToRgb(b); return rgbToHex(x.map((v, i) => v + (y[i] - v) * t)); }
+function shadeHex(h, t) { return mixHex(h, t < 0 ? "#000000" : "#ffffff", Math.abs(t)); }
+
+function applyTheme(id) {
+  const t = THEMES.find(x => x.id === id) || THEMES[0];
+  const st = document.documentElement.style;
+  st.setProperty("--bg", t.bg); st.setProperty("--surface", t.surface); st.setProperty("--surface-2", t.surface2);
+  st.setProperty("--line", t.line); st.setProperty("--text", t.text); st.setProperty("--muted", t.muted);
+  for (const c of ["green", "red", "gold", "blue"]) {
+    st.setProperty(`--${c}`, t[c]);
+    st.setProperty(`--${c}-d`, shadeHex(t[c], -0.22));
+    st.setProperty(`--${c}-bg`, mixHex(t[c], t.bg, t.light ? 0.8 : 0.82));
+  }
+  st.colorScheme = t.light ? "light" : "dark";
+  const meta = document.querySelector('meta[name="color-scheme"]'); if (meta) meta.content = t.light ? "light" : "dark";
+}
+
+
+/* ============================================================================
+   UTILITIES
+   ============================================================================ */
+const app = document.getElementById("app");
+
+function esc(s) {
+  return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+function normalize(s) { return String(s).trim().toLowerCase().replace(/\s+/g, " "); }
+// Looser normalisation for highlight answers: letters/numbers only, single spaces.
+function normWords(s) { return String(s).toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, " ").replace(/\s+/g, " ").trim(); }
+
+// Reading helpers ------------------------------------------------------------
+function blanksTask(q) { return (q.tasks || []).find(t => t.kind === "blanks"); }
+function sentenceTask(q) { return (q.tasks || []).find(t => t.kind === "sentence"); }
+function blankWord(q, k) { const b = blanksTask(q); const e = b && b.answers && b.answers[k]; return e && Array.isArray(e.choices) ? e.choices[e.answer] : "____"; }
+function sentenceText(q) { const t = sentenceTask(q); return t && Array.isArray(t.choices) ? t.choices[t.answer] : "____"; }
+// The passage with every blank and the missing sentence filled with the correct answers.
+function filledPassage(q) {
+  return String(q.passage).replace(/\{\{(\w+)\}\}/g, (_, k) => k === "sentence" ? sentenceText(q) : blankWord(q, k));
+}
+function readingPrompt(task) {
+  if (task.prompt) return task.prompt;
+  return { blanks: "Complete the sentences.", sentence: "Choose the sentence that best completes the passage.", highlight: "Highlight the answer in the passage.", mcq: "Answer the question." }[task.kind];
+}
+
+function heartsHTML(n) {
+  let out = "";
+  for (let i = 0; i < HEARTS_PER_LESSON; i++) out += `<span class="${i < n ? "" : "lost"}">❤️</span>`;
+  return `<span class="hearts" aria-label="${n} of ${HEARTS_PER_LESSON} hearts">${out}</span>`;
+}
+
+function currentCourse() { return COURSES.find(c => c.id === progress.currentCourse) || null; }
+
+function lessonState(course, item) {
+  const cp = courseProgress(course);
+  if (cp.cleared.includes(item.id)) return "cleared";
+  if (cp.completed.includes(item.id)) return "completed";
+  if (cp.unlocked.includes(item.id)) return "available";
+  return "locked";
+}
+
+function chapterOf(course, item) { return course.chapters.find(ch => ch.items.includes(item)); }
+function chapterDone(course, ch) { const cp = courseProgress(course); return ch.items.length > 0 && ch.items.every(i => cp.completed.includes(i.id)); }
+function courseDone(course) { const cp = courseProgress(course); return course.items.length > 0 && course.items.every(i => cp.completed.includes(i.id)); }
+function chapterState(course, ch) {
+  if (chapterDone(course, ch)) return "done";
+  if (ch.items.length && lessonState(course, ch.items[0]) === "locked") return "locked";
+  return "active";
+}
+
+// Returns the playable questions for a lesson. A "reading" question expands into
+// one entry per task (each task costs a heart and moves the progress bar).
+function validQuestions(item) {
+  const out = [];
+  (item.questions || []).forEach(q => {
+    if (q.type === "reading") {
+      const tasks = (q.tasks || []).filter(t => READING_KINDS.includes(t.kind));
+      tasks.forEach((task, k) => out.push({ type: "reading", src: q, task, step: k, tasks, prompt: readingPrompt(task), explanation: task.explanation }));
+    } else if (SUPPORTED_TYPES.includes(q.type)) out.push(q);
+  });
+  return out;
+}
+
+// For questions answered by picking one of several choices, the correct index.
+function choiceAnswer(q) {
+  if (q.type === "mcq") return q.answer;
+  if (q.type === "reading" && (q.task.kind === "sentence" || q.task.kind === "mcq")) return q.task.answer;
+  return null;
+}
+
+function correctAnswerText(q) {
+  if (q.type === "reading") {
+    const t = q.task;
+    if (t.kind === "blanks") return Object.keys(t.answers).map(k => `${k}: ${t.answers[k].choices[t.answers[k].answer]}`).join("  ·  ");
+    if (t.kind === "highlight") return Array.isArray(t.answer) ? t.answer[0] : t.answer;
+    return t.choices[t.answer];
+  }
+  if (q.type === "mcq") return q.choices[q.answer];
+  if (q.type === "tf") return q.answer ? "True" : "False";
+  if (q.type === "type") return Array.isArray(q.answer) ? q.answer[0] : q.answer;
+  return "";
+}
+
+function isCorrect(q, given) {
+  if (q.type === "reading") {
+    const t = q.task;
+    if (t.kind === "blanks") return Object.keys(t.answers).every(k => given && given[k] === t.answers[k].answer);
+    if (t.kind === "highlight") return (Array.isArray(t.answer) ? t.answer : [t.answer]).map(normWords).includes(normWords(given));
+    return given === t.answer;
+  }
+  if (q.type === "mcq") return given === q.answer;
+  if (q.type === "tf") return given === q.answer;
+  if (q.type === "type") {
+    const accepted = (Array.isArray(q.answer) ? q.answer : [q.answer]).map(normalize);
+    return accepted.includes(normalize(given));
+  }
+  return false;
+}
+
+let toastTimer = null;
+function toast(msg) {
+  document.querySelectorAll(".toast").forEach(t => t.remove());
+  const el = document.createElement("div");
+  el.className = "toast"; el.setAttribute("role", "status"); el.textContent = msg;
+  document.body.appendChild(el);
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => el.remove(), 2200);
+}
+
+function showModal(html) {
+  closeModal();
+  const ov = document.createElement("div");
+  ov.className = "overlay"; ov.id = "modal";
+  ov.innerHTML = `<div class="modal" role="dialog" aria-modal="true">${html}</div>`;
+  ov.addEventListener("click", e => { if (e.target === ov) closeModal(); });
+  document.body.appendChild(ov);
+  const first = ov.querySelector("button"); if (first) first.focus();
+}
+function closeModal() { const m = document.getElementById("modal"); if (m) m.remove(); }
+
+function statsBarHTML(extraLeft = "") {
+  return `
+    <div class="topbar">
+      ${extraLeft}
+      <span class="stat"><span class="streak">🔥</span> ${currentStreak()}</span>
+      <span class="stat"><span class="xp">⭐</span> ${progress.xp} XP</span>
+      <span style="flex:1"></span>
+      <button class="iconbtn" data-action="settings" aria-label="Settings">⚙</button>
+    </div>`;
+}
+
+
+/* ============================================================================
+   SCREEN 0: COURSE LIST
+   ============================================================================ */
+function showCourseList() {
+  session = null;
+  progress.currentCourse = null;
+  saveProgress();
+
+  const cards = COURSES.map(c => {
+    const cp = courseProgress(c);
+    const done = cp.completed.length, total = c.items.length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    return `
+      <button class="course-card ${done === total && total ? "done" : ""}" data-action="open-course" data-id="${esc(c.id)}">
+        <span class="emoji">${c.emoji || "📘"}</span>
+        <span class="body">
+          <span class="t">${esc(c.title)}</span>
+          <span class="d">${esc(c.description || "")}</span>
+          <span class="p"><span class="bar gold"><span class="fill" style="width:${pct}%"></span></span><span>${done} / ${total}</span></span>
+        </span>
+        <span class="chev">›</span>
+      </button>`;
+  }).join("");
+
+  const warn = CONTENT_WARNINGS.length ? `
+    <div class="banner"><b>Content problems found</b> (details in the browser console):
+      <ul>${CONTENT_WARNINGS.slice(0, 6).map(w => `<li>${esc(w)}</li>`).join("")}${CONTENT_WARNINGS.length > 6 ? `<li>…and ${CONTENT_WARNINGS.length - 6} more</li>` : ""}</ul>
+    </div>` : "";
+
+  app.innerHTML = `
+    <div class="screen">
+      ${statsBarHTML()}
+      <div class="page">
+        <h1>Courses</h1>
+        ${warn}
+        ${cards || `<p style="color:var(--muted)">No courses loaded. Add a course file to <code>courses/</code> and list it in <code>courses/manifest.js</code>.</p>`}
+      </div>
+      <div class="footer">
+        <button class="linkbtn" data-action="reset">Reset progress</button>
+      </div>
+    </div>`;
+  window.scrollTo(0, 0);
+}
+
+
+/* ============================================================================
+   SCREEN 1: ROADMAP
+   ============================================================================ */
+function showRoadmap(course) {
+  session = null;
+  if (course) { progress.currentCourse = course.id; saveProgress(); }
+  course = currentCourse();
+  if (!course) return showCourseList();
+
+  const items = course.items;
+  const cp = courseProgress(course);
+  const done = cp.completed.length;
+  const pct = items.length ? Math.round(done / items.length * 100) : 0;
+  const currentIdx = items.findIndex(i => lessonState(course, i) === "available");
+
+  const nodeHTML = (item) => {
+    const i = items.indexOf(item);
+    const st = lessonState(course, item);
+    const icon = { locked: "🔒", available: "★", completed: "✓", cleared: "👑" }[st];
+    const tip = i === currentIdx ? `<div class="start-tip" aria-hidden="true">START</div>` : "";
+    return `
+      <div class="node-wrap">
+        ${tip}
+        <button class="node ${st}" data-action="open-node" data-id="${esc(item.id)}"
+                aria-label="${esc(item.title)}: ${st}" ${st === "locked" ? 'aria-disabled="true"' : ""}>${icon}</button>
+        <div class="node-label">${esc(item.title)}</div>
+      </div>`;
+  };
+
+  const mapInner = course.chapters.map((ch, ci) => {
+    const chDone = ch.items.filter(i => cp.completed.includes(i.id)).length;
+    const st = chapterState(course, ch);
+    const head = course._singleChapter ? "" : `
+      <div class="chapter-head ${st}">
+        <div>
+          <div class="ch-n">Chapter ${ci + 1}</div>
+          <div class="ch-t">${esc(ch.title)}</div>
+        </div>
+        <div class="ch-p">${st === "done" ? "✓ " : st === "locked" ? "🔒 " : ""}${chDone} / ${ch.items.length}</div>
+      </div>`;
+    return head + ch.items.map(nodeHTML).join("");
+  }).join("");
+
+  app.innerHTML = `
+    <div class="screen">
+      ${statsBarHTML(`<button class="iconbtn" data-action="to-courses" aria-label="Back to courses">‹ <span class="txt">Courses</span></button>`)}
+      <div class="course-head">
+        <h1>${course.emoji ? course.emoji + " " : ""}${esc(course.title)}</h1>
+        <div class="course-progress">
+          <div class="bar gold" role="progressbar" aria-valuenow="${done}" aria-valuemax="${items.length}"><div class="fill" style="width:${pct}%"></div></div>
+          <span>${done} / ${items.length} lessons</span>
+        </div>
+      </div>
+      <div class="map" id="map">
+        <svg aria-hidden="true"></svg>
+        ${items.length ? mapInner : `<p style="text-align:center;color:var(--muted);padding:40px">This course has no lessons yet.</p>`}
+      </div>
+      <div class="footer">
+        Tap a green node to start. Finish a lesson to unlock the next one.<br>
+        <button class="linkbtn" data-action="reset">Reset progress</button>
+      </div>
+    </div>`;
+  layoutMap();
+  window.scrollTo(0, 0);
+}
+
+// Positions the nodes on a winding path and draws the connecting line.
+// Everything is computed in pixels from the map's real width, so the line
+// always meets the centre of each node.
+function layoutMap() {
+  const map = document.getElementById("map");
+  const course = currentCourse();
+  if (!map || !course) return;
+  const items = course.items;
+  const cp = courseProgress(course);
+  const W = map.clientWidth || 360;
+  const SPACING = 125, R = 39, HEAD_H = 64; // R = node radius
+
+  // Walk chapters top to bottom, assigning a y to each header and node.
+  const heads = map.querySelectorAll(".chapter-head");
+  const pts = [];
+  let y = 30;
+  course.chapters.forEach((ch, ci) => {
+    if (course._singleChapter) { y += 60; }
+    else { heads[ci].style.top = `${y}px`; y += HEAD_H + 92; }
+    ch.items.forEach((_, j) => {
+      pts.push({ x: W / 2 + Math.sin(j * Math.PI / 2) * W * 0.27, y });
+      y += SPACING;
+    });
+    y += 10;
+  });
+  const H = y + 30;
+  map.style.height = `${H}px`;
+
+  let paths = "";
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], my = (a.y + b.y) / 2;
+    const d = `M ${a.x} ${a.y} C ${a.x} ${my}, ${b.x} ${my}, ${b.x} ${b.y}`;
+    paths += `<path d="${d}" class="${cp.completed.includes(items[i - 1].id) ? "done" : ""}"></path>`;
+  }
+  const svg = map.querySelector("svg");
+  svg.setAttribute("width", W); svg.setAttribute("height", H);
+  svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+  svg.innerHTML = paths;
+
+  map.querySelectorAll(".node-wrap").forEach((el, i) => {
+    el.style.left = `${pts[i].x}px`;
+    el.style.top = `${pts[i].y - R}px`;
+  });
+}
+let resizeTimer = null;
+window.addEventListener("resize", () => { clearTimeout(resizeTimer); resizeTimer = setTimeout(layoutMap, 80); });
+
+function openNode(id) {
+  const course = currentCourse(); if (!course) return;
+  const item = course.items.find(i => i.id === id);
+  if (!item) return;
+  const st = lessonState(course, item);
+  if (st === "locked") { Sound.heart(); toast("Finish the previous lesson to unlock this one."); return; }
+  const n = validQuestions(item).length;
+  const status = { available: "Not started", completed: "Completed — play again for more XP", cleared: "Cleared 👑" }[st];
+  showModal(`
+    <h2>${esc(item.title)}</h2>
+    <p>${esc(item.description || "")}</p>
+    <div class="meta">
+      <span>⭐ ${item.xp || 0} XP</span>
+      <span>❓ ${n} question${n === 1 ? "" : "s"}</span>
+      <span style="color:var(--muted)">${status}</span>
+    </div>
+    <div class="stack">
+      <button class="btn green" data-action="start-lesson" data-id="${esc(item.id)}" ${n === 0 ? "disabled" : ""}>${st === "available" ? "Start" : "Practice again"}</button>
+      <button class="btn ghost" data-action="close-modal">Not now</button>
+    </div>`);
+}
+
+
+/* ============================================================================
+   SCREEN 2: LESSON
+   ============================================================================ */
+let session = null;
+
+function startLesson(item, opts = {}) {
+  closeModal();
+  const questions = opts.questions || validQuestions(item);
+  if (!questions.length) { toast("This lesson has no supported questions."); return; }
+  session = {
+    course: currentCourse(),
+    item,
+    mode: opts.mode || "main",     // "main" = counts for completion; "retry" = practising misses
+    questions,
+    index: 0,
+    hearts: HEARTS_PER_LESSON,
+    misses: [],
+    correct: 0,
+    answered: false
+  };
+  renderQuestion();
+}
+
+// Builds the passage for a reading task. Blanks and the missing sentence are
+// shown filled once their task has been passed, editable during their task,
+// and as gaps before it. In highlight mode every word is a tappable span.
+function passageHTML(q, mode) {
+  const src = q.src, tasks = q.tasks;
+  const bIdx = tasks.findIndex(t => t.kind === "blanks"), sIdx = tasks.findIndex(t => t.kind === "sentence");
+  const parts = String(src.passage).split(/(\{\{\w+\}\})/);
+  let html = "", plain = "";
+  parts.forEach(part => {
+    const m = part.match(/^\{\{(\w+)\}\}$/);
+    if (!m) { html += esc(part); plain += part; return; }
+    const k = m[1];
+    if (k === "sentence") {
+      if (sIdx !== -1 && sIdx < q.step) { html += `<span class="filled">${esc(sentenceText(src))}</span>`; plain += sentenceText(src); }
+      else if (sIdx === q.step) { html += `<span class="slot" aria-label="missing sentence"></span>`; plain += "____"; }
+      else { html += `<span class="gap"></span>`; plain += "____"; }
+    } else {
+      const b = blanksTask(src), e = b && b.answers && b.answers[k];
+      if (bIdx !== -1 && bIdx < q.step) { html += `<span class="filled">${esc(blankWord(src, k))}</span>`; plain += blankWord(src, k); }
+      else if (bIdx === q.step && e) {
+        html += `<select class="blank" data-b="${esc(k)}" aria-label="Blank ${esc(k)}"><option value="" selected disabled>…</option>` +
+          e.choices.map((c, i) => `<option value="${i}">${esc(c)}</option>`).join("") + `</select>`;
+        plain += "____";
+      }
+      else { html += `<span class="gap"></span>`; plain += "____"; }
+    }
+  });
+  if (mode !== "highlight") return html;
+  // Highlight mode: tokenise the plain text into tappable words.
+  let i = 0;
+  return plain.split(/(\s+)/).map(tok => /^\s+$/.test(tok) || tok === "" ? tok : `<span class="w" data-i="${i++}">${esc(tok)}</span>`).join("");
+}
+
+function renderQuestion() {
+  const s = session, q = s.questions[s.index];
+  s.hl = null; // highlight selection {a, b}
+  const kind = q.type === "reading"
+    ? "Reading · " + { blanks: "Complete the sentences", sentence: "Complete the passage", highlight: "Highlight the answer", mcq: "About the passage" }[q.task.kind]
+    : { mcq: "Choose the correct answer", tf: "True or false?", type: "Type your answer" }[q.type];
+
+  let body = "";
+  if (q.type === "reading") {
+    const t = q.task;
+    if (t.kind === "blanks") {
+      body = `<div class="passage" id="passage">${passageHTML(q)}</div>
+              <div class="hint">Pick a word for every blank, then press Check.</div>`;
+    } else if (t.kind === "sentence") {
+      body = `<div class="passage" id="passage">${passageHTML(q)}</div>
+              <div class="choices" role="group" aria-label="Choices">` +
+              t.choices.map((c, i) => `<button class="choice" data-action="choose" data-value="${i}"><span class="key">${i + 1}</span><span>${esc(c)}</span></button>`).join("") + `</div>`;
+    } else if (t.kind === "highlight") {
+      body = `<div class="passage" id="passage">${passageHTML(q, "highlight")}</div>
+              <div class="hint" id="hl-hint">Tap the first word of your answer, then the last word.</div>`;
+    } else {
+      body = `<div class="passage" id="passage">${passageHTML(q)}</div>
+              <div class="choices" role="group" aria-label="Choices">` +
+              t.choices.map((c, i) => `<button class="choice" data-action="choose" data-value="${i}"><span class="key">${i + 1}</span><span>${esc(c)}</span></button>`).join("") + `</div>`;
+    }
+  } else if (q.type === "mcq") {
+    body = `<div class="choices" role="group" aria-label="Choices">` +
+      q.choices.map((c, i) => `<button class="choice" data-action="choose" data-value="${i}"><span class="key">${i + 1}</span><span>${esc(c)}</span></button>`).join("") +
+      `</div>`;
+  } else if (q.type === "tf") {
+    body = `<div class="tf">
+      <button class="choice" data-action="choose" data-value="true">True</button>
+      <button class="choice" data-action="choose" data-value="false">False</button>
+    </div>`;
+  } else if (q.type === "type") {
+    body = `<input class="typein" id="typein" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Type here…" aria-label="Your answer">`;
+  }
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="topbar">
+        <button class="iconbtn" data-action="quit" aria-label="Quit lesson">✕</button>
+        <div class="bar" role="progressbar" aria-valuenow="${s.index}" aria-valuemax="${s.questions.length}" aria-label="Lesson progress">
+          <div class="fill" id="lesson-fill" style="width:${s.index / s.questions.length * 100}%"></div>
+        </div>
+        ${heartsHTML(s.hearts)}
+      </div>
+      <div class="qbody">
+        <div class="qkind">${s.mode === "retry" ? "Retrying misses · " : ""}${kind} · ${s.index + 1} of ${s.questions.length}</div>
+        <p class="prompt">${esc(q.prompt)}</p>
+        ${body}
+      </div>
+      <div class="foot" id="foot">
+        <div id="feedback" aria-live="polite"></div>
+        ${needsCheck(q) ? `<button class="btn green" id="checkbtn" data-action="check">Check</button>` : `<div style="color:var(--muted);text-align:center;font-weight:700">Pick an answer</div>`}
+      </div>
+    </div>`;
+  window.scrollTo(0, 0);
+  const inp = document.getElementById("typein"); if (inp) inp.focus();
+}
+
+function needsCheck(q) { return q.type === "type" || (q.type === "reading" && (q.task.kind === "blanks" || q.task.kind === "highlight")); }
+
+// Highlight-mode tap handling: first tap sets the start, second tap sets the end.
+function tapWord(i) {
+  const s = session; if (!s || s.answered) return;
+  if (!s.hl || s.hl.a !== s.hl.b) s.hl = { a: i, b: i };
+  else s.hl = { a: Math.min(s.hl.a, i), b: Math.max(s.hl.a, i) };
+  const words = document.querySelectorAll("#passage .w");
+  words.forEach((w, j) => w.classList.toggle("sel", j >= s.hl.a && j <= s.hl.b));
+  const hint = document.getElementById("hl-hint");
+  if (hint) hint.innerHTML = s.hl.a === s.hl.b ? "Now tap the last word (or press Check for a single word)." : `Selected: <b>${esc(selectedText())}</b>`;
+  Sound.tap();
+}
+function selectedText() {
+  const s = session; if (!s.hl) return "";
+  return [...document.querySelectorAll("#passage .w")].slice(s.hl.a, s.hl.b + 1).map(w => w.textContent).join(" ");
+}
+
+function submitAnswer(given) {
+  const s = session; if (!s || s.answered) return;
+  const q = s.questions[s.index];
+  const ok = isCorrect(q, given);
+  s.answered = true;
+  if (ok) { s.correct++; Sound.correct(); }
+  else { s.misses.push(q); s.hearts--; Sound.wrong(); }
+
+  const fill = document.getElementById("lesson-fill");
+  fill.style.width = `${(s.index + 1) / s.questions.length * 100}%`;
+  fill.parentElement.setAttribute("aria-valuenow", s.index + 1);
+  document.querySelector(".topbar .hearts").outerHTML = heartsHTML(s.hearts);
+
+  const ca = choiceAnswer(q);
+  document.querySelectorAll(".choice").forEach(btn => {
+    btn.disabled = true;
+    const v = btn.dataset.value;
+    const isThis = q.type === "tf" ? (v === "true") === given : Number(v) === given;
+    const isRight = q.type === "tf" ? (v === "true") === q.answer : Number(v) === ca;
+    if (isRight) btn.classList.add("correct");
+    else if (isThis) btn.classList.add("wrong");
+  });
+  const inp = document.getElementById("typein");
+  if (inp) { inp.disabled = true; inp.style.borderColor = ok ? "var(--green)" : "var(--red)"; }
+
+  if (q.type === "reading" && q.task.kind === "blanks") {
+    document.querySelectorAll("#passage select.blank").forEach(sel => {
+      sel.disabled = true;
+      const k = sel.dataset.b, right = q.task.answers[k].answer;
+      sel.classList.add(Number(sel.value) === right ? "right" : "wrongsel");
+    });
+  }
+  if (q.type === "reading" && q.task.kind === "highlight") {
+    const words = [...document.querySelectorAll("#passage .w")];
+    const norm = words.map(w => normWords(w.textContent));
+    const ans = normWords(Array.isArray(q.task.answer) ? q.task.answer[0] : q.task.answer).split(" ");
+    let start = -1;
+    for (let i = 0; i + ans.length <= norm.length && start < 0; i++) {
+      if (ans.every((a, j) => norm[i + j] === a)) start = i;
+    }
+    words.forEach((w, i) => {
+      w.classList.remove("sel");
+      if (!ok && s.hl && i >= s.hl.a && i <= s.hl.b) w.classList.add("bad");
+      if (start >= 0 && i >= start && i < start + ans.length) { w.classList.remove("bad"); w.classList.add("ans"); }
+    });
+    const hint = document.getElementById("hl-hint"); if (hint) hint.textContent = "";
+  }
+
+  const foot = document.getElementById("foot");
+  foot.classList.add(ok ? "ok" : "bad");
+  const outOfHearts = s.hearts <= 0;
+  const expl = q.explanation ? `<span class="sub">${esc(q.explanation)}</span>` : "";
+  document.getElementById("feedback").innerHTML = ok
+    ? `<div class="feedback"><span class="mark">✓</span><div>Correct!${expl}</div></div>`
+    : `<div class="feedback"><span class="mark">✗</span><div>${outOfHearts ? "Out of hearts" : "Not quite"}<span class="sub">Correct answer: <b>${esc(correctAnswerText(q))}</b></span>${expl}</div></div>`;
+  const btn = document.getElementById("checkbtn");
+  const nextHTML = `<button class="btn ${ok ? "green" : "red"}" id="continuebtn" data-action="continue">${outOfHearts ? "See results" : "Continue"}</button>`;
+  if (btn) btn.outerHTML = nextHTML; else foot.lastElementChild.outerHTML = nextHTML;
+  document.getElementById("continuebtn").focus();
+}
+
+function continueLesson() {
+  const s = session; if (!s || !s.answered) return;
+  s.answered = false;
+  s.index++;
+  if (s.hearts <= 0) return finishLesson("failed");
+  if (s.index >= s.questions.length) return finishLesson("done");
+  renderQuestion();
+}
+
+let pendingCelebration = null; // { kind: "chapter" | "course", chapter } waiting to be shown
+
+function finishLesson(outcome) {
+  const s = session;
+  const cp = courseProgress(s.course);
+  let xpEarned = 0, unlockedNext = false;
+  if (outcome === "done") {
+    if (s.mode === "main") {
+      const ch = chapterOf(s.course, s.item);
+      const chapterWasDone = chapterDone(s.course, ch), courseWasDone = courseDone(s.course);
+
+      xpEarned = s.item.xp || 0;
+      progress.xp += xpEarned;
+      if (!cp.completed.includes(s.item.id)) cp.completed.push(s.item.id);
+      const idx = s.course.items.findIndex(i => i.id === s.item.id);
+      const next = s.course.items[idx + 1];
+      if (next && !cp.unlocked.includes(next.id)) { cp.unlocked.push(next.id); unlockedNext = true; }
+      touchStreak();
+
+      // First time the whole course / chapter becomes complete → celebrate after the results screen.
+      if (!courseWasDone && courseDone(s.course)) pendingCelebration = { kind: "course", chapter: ch };
+      else if (!chapterWasDone && chapterDone(s.course, ch)) pendingCelebration = { kind: "chapter", chapter: ch };
+    }
+    if (s.misses.length === 0 && !cp.cleared.includes(s.item.id)) cp.cleared.push(s.item.id);
+    saveProgress();
+    Sound.complete();
+    if (unlockedNext && !pendingCelebration) setTimeout(() => Sound.unlock(), 1000);
+  } else {
+    Sound.fail();
+  }
+  showResults(outcome, xpEarned, unlockedNext);
+}
+
+function quitLesson() {
+  showModal(`
+    <h2>Quit this lesson?</h2>
+    <p>Progress in this lesson will be lost. Your XP and completed lessons are safe.</p>
+    <div class="stack">
+      <button class="btn ghost" data-action="close-modal">Keep going</button>
+      <button class="btn red" data-action="to-roadmap">Quit</button>
+    </div>`);
+}
+
+
+/* ============================================================================
+   SCREEN 3: RESULTS
+   ============================================================================ */
+function showResults(outcome, xpEarned, unlockedNext) {
+  const s = session;
+  const failed = outcome === "failed";
+  const perfect = !failed && s.misses.length === 0;
+
+  const title = failed ? "Out of hearts" : (s.mode === "retry" ? (perfect ? "Misses cleared!" : "Keep practising") : (perfect ? "Perfect lesson!" : "Lesson complete!"));
+  const emoji = failed ? "💔" : perfect ? "🏆" : "🎉";
+  const nextItem = s.course.items[s.course.items.findIndex(i => i.id === s.item.id) + 1];
+
+  const misses = s.misses.length ? `
+    <h3>Missed ${s.misses.length === 1 ? "item" : "items"}</h3>
+    <div class="miss-list">${s.misses.map(q => `
+      <div class="miss">
+        <div class="p">${esc(q.prompt)}</div>
+        <div class="a">Answer: <b>${esc(correctAnswerText(q))}</b></div>
+      </div>`).join("")}
+    </div>` : "";
+
+  const actions = failed
+    ? `<button class="btn green" data-action="retry-lesson">Try again</button>
+       <button class="btn ghost" data-action="to-roadmap">Back to roadmap</button>`
+    : `${s.misses.length ? `<button class="btn blue" data-action="retry-misses">Retry misses (${s.misses.length})</button>` : ""}
+       <button class="btn green" data-action="to-roadmap">${pendingCelebration ? "Continue" : "Back to roadmap"}</button>`;
+
+  app.innerHTML = `
+    <div class="screen">
+      <div class="results">
+        <div class="big">${emoji}</div>
+        <h2>${title}</h2>
+        ${failed ? `<p style="text-align:center;color:var(--muted);margin:0">${esc(s.item.title)} stays unlocked. Give it another go.</p>` : ""}
+        ${unlockedNext && nextItem ? `<p style="text-align:center;color:var(--green);font-weight:800;margin:0">🔓 Unlocked: ${esc(nextItem.title)}</p>` : ""}
+        <div class="stats">
+          <div class="stat-card ${failed ? "red" : "green"}"><div class="v">${s.correct} / ${s.index}</div><div class="l">Score</div></div>
+          <div class="stat-card gold"><div class="v">+${xpEarned}</div><div class="l">XP earned</div></div>
+        </div>
+        ${misses}
+        <div style="flex:1"></div>
+        <div class="stack">${actions}</div>
+      </div>
+    </div>`;
+  window.scrollTo(0, 0);
+}
+
+
+/* ============================================================================
+   SCREEN 4: CELEBRATION  (chapter complete / course complete)
+   ============================================================================ */
+function confetti(container, n, delay) {
+  if (!container || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+  const colors = ["#58cc02", "#ffc800", "#1cb0f6", "#ff4b4b", "#ff9600", "#c58af9", "#ffffff"];
+  let html = "";
+  for (let i = 0; i < n; i++) {
+    html += `<span style="left:${Math.random() * 100}%;background:${colors[i % colors.length]};` +
+      `animation-delay:${delay + Math.random() * 0.9}s;animation-duration:${2.2 + Math.random() * 1.8}s;` +
+      `width:${6 + Math.random() * 8}px;height:${10 + Math.random() * 10}px;border-radius:${Math.random() < 0.3 ? "50%" : "3px"}"></span>`;
+  }
+  container.insertAdjacentHTML("beforeend", html);
+}
+
+function showCelebration() {
+  const c = pendingCelebration;
+  pendingCelebration = null;
+  const course = currentCourse();
+  if (!c || !course) return showRoadmap();
+  session = null;
+
+  const isCourse = c.kind === "course";
+  const chIdx = course.chapters.indexOf(c.chapter);
+  const nextCh = course.chapters[chIdx + 1];
+  const totalXp = course.items.reduce((n, i) => n + (i.xp || 0), 0);
+
+  const sub = isCourse
+    ? `Every lesson finished. You've earned ${totalXp} XP from this course.`
+    : nextCh ? `${c.chapter.items.length} lesson${c.chapter.items.length === 1 ? "" : "s"} done. Next up: ${esc(nextCh.title)}.`
+             : `That was the final chapter.`;
+
+  app.innerHTML = `
+    <div class="screen celebrate ${c.kind}">
+      ${isCourse ? `<div class="flash" aria-hidden="true"></div><div class="rays" aria-hidden="true"></div>` : ""}
+      <div class="confetti" id="confetti" aria-hidden="true"></div>
+      <div class="cel-body">
+        <div class="badge-wrap"><div class="ring"></div><div class="ring r2"></div><div class="badge">${isCourse ? "🏆" : "🏅"}</div></div>
+        <div class="cel-kicker">${isCourse ? "Course complete" : `Chapter ${chIdx + 1} complete`}</div>
+        <h2 class="cel-title">${esc(isCourse ? course.title : c.chapter.title)}</h2>
+        <p class="cel-sub">${sub}</p>
+        <div class="stats">
+          <div class="stat-card gold"><div class="v">${progress.xp}</div><div class="l">Total XP</div></div>
+          <div class="stat-card green"><div class="v">${isCourse ? course.items.length : `${chIdx + 1} / ${course.chapters.length}`}</div><div class="l">${isCourse ? "Lessons done" : "Chapters done"}</div></div>
+        </div>
+        <div class="stack">
+          <button class="btn green" data-action="to-roadmap">${isCourse ? "Back to roadmap" : "Keep going"}</button>
+          ${isCourse ? `<button class="btn ghost" data-action="to-courses">All courses</button>` : ""}
+        </div>
+      </div>
+    </div>`;
+  window.scrollTo(0, 0);
+  const box = document.getElementById("confetti");
+  if (isCourse) {
+    confetti(box, 120, 0);
+    setTimeout(() => confetti(box, 120, 0), 1300);
+    setTimeout(() => confetti(box, 80, 0), 2600);
+    Sound.course();
+  } else {
+    confetti(box, 70, 0);
+    Sound.chapter();
+  }
+}
+
+
+/* ============================================================================
+   SETTINGS
+   ============================================================================ */
+function openSettings() {
+  const st = progress.settings;
+  const doneTotal = COURSES.reduce((n, c) => n + courseProgress(c).completed.length, 0);
+  showModal(`
+    <h2>Settings</h2>
+    <p>⭐ ${progress.xp} XP · 🔥 ${currentStreak()} day streak · ${doneTotal} lessons done</p>
+    <div class="setting">
+      <span class="lbl">Sound<small>Play effects for answers and results</small></span>
+      <button class="toggle ${st.muted ? "" : "on"}" id="mute-toggle" data-action="toggle-mute" role="switch" aria-checked="${!st.muted}" aria-label="Sound on"></button>
+    </div>
+    <div class="setting">
+      <span class="lbl">Volume<small id="vol-label">${st.volume}%</small></span>
+      <input type="range" min="0" max="100" step="5" value="${st.volume}" id="vol" aria-label="Volume">
+    </div>
+    <div class="setting" style="flex-direction:column;align-items:stretch">
+      <span class="lbl">Colour scheme<small>Applies everywhere, instantly</small></span>
+      <div class="themes">${THEMES.map(t => `
+        <button class="theme ${st.theme === t.id ? "on" : ""}" data-action="theme" data-id="${t.id}"
+                style="background:${t.bg};color:${t.text};border-color:${st.theme === t.id ? "" : t.line}" aria-pressed="${st.theme === t.id}">
+          <span class="dots"><i style="background:${t.green}"></i><i style="background:${t.red}"></i><i style="background:${t.gold}"></i><i style="background:${t.blue}"></i></span>${t.name}
+        </button>`).join("")}
+      </div>
+    </div>
+    <div class="setting">
+      <span class="lbl">Preview</span>
+      <span style="display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end">
+        <button class="btn small" data-action="test-sound">Lesson</button>
+        <button class="btn small" data-action="test-chapter">Chapter</button>
+        <button class="btn small" data-action="test-course">Course</button>
+      </span>
+    </div>
+    <div class="stack" style="margin-top:18px">
+      <button class="btn red" data-action="reset">Reset progress</button>
+      <button class="btn ghost" data-action="close-modal">Close</button>
+    </div>`);
+}
+
+function confirmReset() {
+  showModal(`
+    <h2>Reset all progress?</h2>
+    <p>XP, streak, and completed lessons in every course will be wiped. Sound settings are kept.</p>
+    <div class="stack">
+      <button class="btn ghost" data-action="close-modal">Cancel</button>
+      <button class="btn red" data-action="reset-confirm">Yes, reset</button>
+    </div>`);
+}
+
+
+/* ============================================================================
+   EVENT WIRING
+   ============================================================================ */
+document.addEventListener("click", e => {
+  const word = e.target.closest("#passage .w");
+  if (word) { tapWord(Number(word.dataset.i)); return; }
+  const el = e.target.closest("[data-action]");
+  if (!el) return;
+  const a = el.dataset.action;
+  // Light tick for navigation; answer buttons play their own result sound.
+  if (!["choose", "check", "test-sound", "test-chapter", "test-course", "toggle-mute", "open-node", "theme"].includes(a)) Sound.tap();
+  switch (a) {
+    case "open-course":  { const c = COURSES.find(c => c.id === el.dataset.id); if (c) showRoadmap(c); break; }
+    case "to-courses":   closeModal(); showCourseList(); break;
+    case "open-node":    openNode(el.dataset.id); break;
+    case "start-lesson": { const c = currentCourse(); startLesson(c.items.find(i => i.id === el.dataset.id)); break; }
+    case "close-modal":  closeModal(); break;
+    case "settings":     openSettings(); break;
+    case "reset":        confirmReset(); break;
+    case "reset-confirm": closeModal(); resetProgress(); break;
+    case "quit":         quitLesson(); break;
+    case "to-roadmap":   closeModal(); if (pendingCelebration) showCelebration(); else showRoadmap(); break;
+    case "choose": {
+      const q = session && session.questions[session.index];
+      if (!q) break;
+      submitAnswer(q.type === "tf" ? el.dataset.value === "true" : Number(el.dataset.value));
+      break;
+    }
+    case "check": {
+      const q = session && session.questions[session.index];
+      if (!q) break;
+      if (q.type === "type") {
+        const inp = document.getElementById("typein");
+        if (inp && inp.value.trim()) submitAnswer(inp.value); else if (inp) inp.focus();
+      } else if (q.type === "reading" && q.task.kind === "blanks") {
+        const sels = [...document.querySelectorAll("#passage select.blank")];
+        if (sels.some(x => x.value === "")) { toast("Fill every blank first."); break; }
+        const given = {}; sels.forEach(x => { given[x.dataset.b] = Number(x.value); });
+        submitAnswer(given);
+      } else if (q.type === "reading" && q.task.kind === "highlight") {
+        if (!session.hl) { toast("Tap the words in the passage first."); break; }
+        submitAnswer(selectedText());
+      }
+      break;
+    }
+    case "theme": {
+      progress.settings.theme = el.dataset.id; saveProgress();
+      applyTheme(progress.settings.theme);
+      openSettings(); Sound.tap();
+      break;
+    }
+    case "continue":     continueLesson(); break;
+    case "retry-misses": startLesson(session.item, { mode: "retry", questions: session.misses.slice() }); break;
+    case "retry-lesson": startLesson(session.item); break;
+    case "toggle-mute": {
+      progress.settings.muted = !progress.settings.muted; saveProgress();
+      el.classList.toggle("on", !progress.settings.muted);
+      el.setAttribute("aria-checked", String(!progress.settings.muted));
+      if (!progress.settings.muted) Sound.correct();
+      break;
+    }
+    case "test-sound":   Sound.complete(); break;
+    case "test-chapter": Sound.chapter(); break;
+    case "test-course":  Sound.course(); break;
+  }
+});
+
+document.addEventListener("input", e => {
+  if (e.target.id !== "vol") return;
+  progress.settings.volume = Number(e.target.value);
+  const l = document.getElementById("vol-label"); if (l) l.textContent = `${progress.settings.volume}%`;
+  saveProgress();
+});
+document.addEventListener("change", e => { if (e.target.id === "vol") Sound.correct(); });
+
+document.addEventListener("keydown", e => {
+  if (document.getElementById("modal")) { if (e.key === "Escape") closeModal(); return; }
+  if (!session) return;
+  const q = session.questions[session.index];
+  if (!q) return;
+  if (e.key === "Enter") {
+    if (session.answered) { e.preventDefault(); continueLesson(); return; }
+    const cb = document.getElementById("checkbtn");
+    if (cb && e.target.tagName !== "SELECT") { e.preventDefault(); cb.click(); }
+    return;
+  }
+  if (session.answered || e.target.tagName === "SELECT") return;
+  const n = q.type === "mcq" ? q.choices.length : (choiceAnswer(q) !== null ? q.task.choices.length : 0);
+  if (n && /^[1-9]$/.test(e.key) && Number(e.key) <= n) submitAnswer(Number(e.key) - 1);
+  if (q.type === "tf" && (e.key === "t" || e.key === "T")) submitAnswer(true);
+  if (q.type === "tf" && (e.key === "f" || e.key === "F")) submitAnswer(false);
+});
+
+
+/* ============================================================================
+   BOOT: load courses/manifest.js, then every file it lists, then start.
+   ============================================================================ */
+async function boot() {
+  try { await loadScript("courses/manifest.js"); }
+  catch (e) {
+    const tried = new URL("courses/manifest.js", location.href).href;
+    CONTENT_WARNINGS.push(`Can't find the courses folder. index.html must sit in the same folder as "courses/" (looked for ${tried}). If you downloaded index.html on its own, download the zip and open index.html from inside the unzipped folder.`);
+  }
+
+  const files = typeof COURSE_FILES !== "undefined" && Array.isArray(COURSE_FILES) ? COURSE_FILES : [];
+  if (!files.length && !CONTENT_WARNINGS.length) CONTENT_WARNINGS.push("courses/manifest.js lists no course files.");
+  for (const f of files) {
+    try { await loadScript("courses/" + f); }
+    catch (e) { CONTENT_WARNINGS.push(e.message); }
+  }
+
+  const seen = new Set();
+  COURSES.forEach(c => CONTENT_WARNINGS.push(...validateCourse(c, seen)));
+  if (CONTENT_WARNINGS.length) console.warn("Content problems:\n- " + CONTENT_WARNINGS.join("\n- "));
+
+  progress = loadProgress();
+  applyTheme(progress.settings.theme);
+  if (currentCourse()) showRoadmap(); else showCourseList();
+}
+boot();
+</script>
+</body>
+</html>
